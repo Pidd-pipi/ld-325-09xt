@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/blueship581/cybuildprice/backend/internal/dto"
+	"github.com/blueship581/cybuildprice/backend/internal/middleware"
 	"github.com/blueship581/cybuildprice/backend/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -24,6 +25,14 @@ func (h *OfferHandler) List(c *gin.Context) {
 		return
 	}
 	data, err := h.service.List(path.ID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	success(c, data)
+}
+func (h *OfferHandler) ListMine(c *gin.Context) {
+	data, err := h.service.ListMine(middleware.SupplierID(c))
 	if err != nil {
 		c.Error(err)
 		return

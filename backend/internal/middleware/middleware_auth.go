@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
@@ -84,4 +85,17 @@ func NewDemoToken(secret, subject, role string) (string, error) {
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(constants.DemoTokenLifetime)),
 	}}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, payload).SignedString([]byte(secret))
+}
+
+// SupplierID resolves the supplier record id carried by a supplier token
+// subject ("<supplier_id>"). Non-supplier callers receive 0.
+func SupplierID(c *gin.Context) uint {
+	if c.GetString(constants.RoleContextKey) != constants.RoleSupplier {
+		return 0
+	}
+	id, err := strconv.ParseUint(c.GetString(constants.UserIDContextKey), 10, 64)
+	if err != nil {
+		return 0
+	}
+	return uint(id)
 }

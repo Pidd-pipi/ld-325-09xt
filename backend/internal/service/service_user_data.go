@@ -3,26 +3,32 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/blueship581/cybuildprice/backend/internal/constants"
 	"github.com/blueship581/cybuildprice/backend/internal/dto"
 	"github.com/blueship581/cybuildprice/backend/internal/model"
 	"github.com/blueship581/cybuildprice/backend/internal/repository"
+	"gorm.io/gorm"
 )
 
-type UserDataService struct{ repo repository.UserDataRepository }
-
-func NewUserDataService(repo repository.UserDataRepository) *UserDataService {
-	return &UserDataService{repo}
+type UserDataService struct {
+	repo      repository.UserDataRepository
+	offerRepo repository.OfferRepository
+	db        *gorm.DB
 }
+
+func NewUserDataService(db *gorm.DB, repo repository.UserDataRepository, offerRepo repository.OfferRepository) *UserDataService {
+	return &UserDataService{db: db, repo: repo, offerRepo: offerRepo}
+}
+
 func (s *UserDataService) Favorite(user string, input dto.CreateFavoriteRequest) (model.Favorite, error) {
 	return s.repo.CreateFavorite(model.Favorite{UserID: user, ProductID: input.ProductID, Folder: input.Folder})
 }
+
 func (s *UserDataService) Favorites(user string) ([]model.Favorite, error) {
 	return s.repo.ListFavorites(user)
 }
-func (s *UserDataService) Alert(user string, input dto.CreateAlertRequest) (model.PriceAlert, error) {
-	return s.repo.CreateAlert(model.PriceAlert{UserID: user, ProductID: input.ProductID, TargetPrice: input.TargetPrice, DropPercent: input.DropPercent, Active: true})
-}
+
 func (s *UserDataService) Budget(user string, input dto.BudgetRequest) (model.Budget, error) {
 	rate := 350.0
 	if input.RoomType == constants.BudgetRoomKitchen {

@@ -50,12 +50,20 @@ func (h *UserDataHandler) CreateAlert(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	row, err := h.service.Alert(c.GetString("user_id"), req)
+	view, err := h.service.Subscribe(c.GetString("user_id"), req)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	success(c, row)
+	success(c, view)
+}
+func (h *UserDataHandler) ListAlerts(c *gin.Context) {
+	views, err := h.service.Alerts(c.GetString("user_id"))
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	success(c, views)
 }
 func (h *UserDataHandler) CreateBudget(c *gin.Context) {
 	var req dto.BudgetRequest

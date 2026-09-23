@@ -1,23 +1,71 @@
 openapi: 3.0.3
 info:
   title: 筑价建材比价 API
-  version: 1.0.0
+  version: 1.1.0
 paths:
   /healthz:
     get:
-      responses: {'200': {description: 服务健康}}
+      summary: 健康检查
+      responses:
+        '200': {description: 服务健康}
+  /api/v1/auth/demo-token:
+    post:
+      summary: 签发演示身份令牌（supplier/admin/user）
+      responses:
+        '200': {description: 成功}
   /api/v1/products:
     get:
       summary: 搜索、分类和排序建材
-      responses: {'200': {description: 成功}}
+      responses:
+        '200': {description: 成功}
   /api/v1/products/compare:
     post:
       summary: 批量比较建材
-      responses: {'200': {description: 成功}}
+      responses:
+        '200': {description: 成功}
   /api/v1/favorites:
     get: {summary: 获取收藏}
     post: {summary: 添加收藏}
   /api/v1/alerts:
-    post: {summary: 创建价格预警}
+    get:
+      summary: 价格提醒列表（当前最低价、触发价、状态、触发记录）
+      responses:
+        '200': {description: 成功}
+    post:
+      summary: 创建价格预警（同一用户同一款材料仅保留一条订阅）
+      responses:
+        '200': {description: 成功}
+        '400': {description: 目标价与降幅均未填写}
   /api/v1/budgets:
     post: {summary: 保存装修预算}
+  /api/v1/supplier/offers:
+    get:
+      summary: 供应商查看自己名下报价（supplier/admin）
+      responses:
+        '200': {description: 成功}
+  /api/v1/supplier/offers/{id}/changes:
+    post:
+      summary: 供应商提交报价修改（单价、运费、货期、库存状态）
+      description: 同一报价存在待审核修改时返回 409，新提交不入库。
+      responses:
+        '200': {description: 已提交待审核}
+        '409': {description: 已有待审核修改}
+  /api/v1/supplier/offer-changes:
+    get:
+      summary: 供应商查看自己的修改与审核结果（supplier/admin）
+      responses:
+        '200': {description: 成功}
+  /api/v1/admin/offer-changes:
+    get:
+      summary: 管理员审核队列，可按 status 过滤（admin）
+      responses:
+        '200': {description: 成功}
+  /api/v1/admin/offer-changes/{id}/review:
+    post:
+      summary: 审核报价修改（通过/驳回）
+      description: >
+        通过时将旧价写入价格历史、报价版本 +1，并触发符合目标价或降幅的活跃订阅；
+        若报价版本已变化，则将本次修改标记为 stale 并返回 409 冲突。
+      responses:
+        '200': {description: 审核完成}
+        '409': {description: 报价版本已变化，本次修改失效}

@@ -22,14 +22,34 @@ func ErrorHandler() gin.HandlerFunc {
 		last := c.Errors.Last()
 		err := last.Err
 		code, status, message := constants.ErrorInternal, http.StatusInternalServerError, "internal server error"
-		if errors.Is(err, apperrors.ErrUnauthorized) {
+		var business *apperrors.BusinessError
+		if errors.As(err, &business) {
+			code, status, message = business.Code, statusForCode(business.Code), business.Message
+		} else if errors.Is(err, apperrors.ErrUnauthorized) {
 			code, status, message = constants.ErrorUnauthorized, http.StatusUnauthorized, "unauthorized"
+		} else if errors.Is(err, apperrors.ErrConflict) {
+			code, status, message = constants.ErrorConflict, http.StatusConflict, "conflicting request state"
 		} else if errors.Is(err, apperrors.ErrNotFound) {
 			code, status, message = constants.ErrorNotFound, http.StatusNotFound, "resource not found"
 		} else if isClientError(err) || last.Type == gin.ErrorTypeBind {
 			code, status, message = constants.ErrorValidation, http.StatusBadRequest, "validation failed"
 		}
 		c.JSON(status, dto.Response{Code: code, Message: message})
+	}
+}
+
+func statusForCode(code int) int {
+	switch code {
+	case constants.ErrorValidation:
+		return http.StatusBadRequest
+	case constants.ErrorNotFound:
+		return http.StatusNotFound
+	case constants.ErrorUnauthorized:
+		return http.StatusUnauthorized
+	case constants.ErrorConflict:
+		return http.StatusConflict
+	default:
+		return http.StatusInternalServerError
 	}
 }
 

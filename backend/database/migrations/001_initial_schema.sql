@@ -1,2 +1,13 @@
 -- GORM AutoMigrate creates the initial schema at startup. This file documents the managed migration boundary.
--- Tables: categories, products, suppliers, offers, price_histories, favorites, price_alerts, budgets.
+-- Tables: categories, products, suppliers, offers, offer_changes, price_histories, favorites, price_alerts, budgets.
+--
+-- Revision: quote change review workflow
+--   offers.version                  optimistic-concurrency token, starts at 1
+--   offer_changes                   supplier quote revisions awaiting review
+--                                   (new unit price / freight / delivery days / stock, base_version, status)
+--   offer_changes partial unique index: at most one 'pending' row per offer
+--       CREATE UNIQUE INDEX idx_offer_change_one_pending
+--           ON offer_changes (offer_id) WHERE status = 'pending';
+--   price_histories.old_unit_price / change_source  archive the prior price on approval
+--   price_alerts.status / base_price / triggered_price / triggered_at
+--       single subscription per (user_id, product_id); fires at most once
