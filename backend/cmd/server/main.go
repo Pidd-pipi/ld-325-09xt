@@ -34,6 +34,10 @@ func main() {
 		log.Error("migrate database", "error", err)
 		os.Exit(1)
 	}
+	if err := model.BackfillDefaults(db); err != nil {
+		log.Error("backfill database defaults", "error", err)
+		os.Exit(1)
+	}
 	if err := model.Seed(db); err != nil {
 		log.Error("seed database", "error", err)
 		os.Exit(1)

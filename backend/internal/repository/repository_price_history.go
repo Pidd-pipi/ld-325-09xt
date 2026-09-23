@@ -2,13 +2,15 @@ package repository
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/blueship581/cybuildprice/backend/internal/model"
 	"gorm.io/gorm"
-	"time"
 )
 
 type PriceHistoryRepository interface {
 	List(uint, time.Time) ([]model.PriceHistory, error)
+	Create(history *model.PriceHistory) error
 }
 type priceHistoryRepository struct{ db *gorm.DB }
 
@@ -21,4 +23,17 @@ func (r *priceHistoryRepository) List(productID uint, since time.Time) ([]model.
 		return nil, fmt.Errorf("list history: %w", err)
 	}
 	return rows, nil
+}
+
+// Create 写入一条价格历史；service 在事务中调用时传入绑定事务的仓储。
+func (r *priceHistoryRepository) Create(history *model.PriceHistory) error {
+	if err := r.db.Create(history).Error; err != nil {
+		return fmt.Errorf("create price history: %w", err)
+	}
+	return nil
+}
+
+// NewPriceHistoryRepositoryTx 绑定到已有事务（例如审核事务）。
+func NewPriceHistoryRepositoryTx(tx *gorm.DB) PriceHistoryRepository {
+	return &priceHistoryRepository{db: tx}
 }

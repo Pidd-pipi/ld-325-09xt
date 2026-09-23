@@ -1,2 +1,11 @@
 -- GORM AutoMigrate creates the initial schema at startup. This file documents the managed migration boundary.
--- Tables: categories, products, suppliers, offers, price_histories, favorites, price_alerts, budgets.
+-- Tables: categories, products, suppliers, offers, offer_changes, price_histories,
+--         favorites, price_alerts, notifications, budgets.
+--
+-- 002 报价审核与价格提醒（由 AutoMigrate 自动应用，此处仅作文档）:
+--   offers.version              报价乐观版本号，初始 1；每次审核通过或库存状态更新递增
+--   offer_changes               供应商报价修改单（pending/approved/rejected/stale + base_version）
+--   price_alerts.baseline_price 订阅建立时的有货最低价，用于降幅判定
+--   price_alerts.status         active/triggered/inactive（替代原 active 布尔）
+--   price_alerts.triggered_price / triggered_at  触发时记录的价格与时间
+--   notifications               预警触发后的站内消息

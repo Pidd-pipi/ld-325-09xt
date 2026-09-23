@@ -40,7 +40,8 @@ docker compose down
 - **多商家报价**：同款材料显示店铺、单价、起订量、运费、交货期及库存状态，最低价高亮。
 - **收藏与对比**：收藏进入“本周采购”文件夹；可同时把 2–4 款材料纳入对比清单。
 - **价格趋势**：读取报价历史，展示 30/90 天或 1 年区间的最高、最低和平均价；前端以 ECharts 绘制 30 天图表。
-- **价格预警**：按目标价和降幅百分比创建订阅，演示环境使用 `demo-user` 身份写入站内预警记录。
+- **价格预警**：按目标价和降幅百分比创建订阅（同一建材仅一条生效订阅）；商家改价经平台审核通过后，符合条件的订阅只触发一次，记录触发价与时间并写入站内消息。提醒页展示当前最低价、触发价与状态。
+- **改价审核**：供应商可提交新单价、运费、货期与库存状态；同一报价已有待审修改时新提交不入库（409）。管理员审核时若报价版本已变化，修改单标记为失效并返回冲突；通过后旧价写入价格历史。供应商可查看全部审核结果。
 - **供应商管理**：供应商资质和审核状态可查询；管理员审核、供应商库存状态更新接口已保留。
 - **装修预算**：按客厅、厨房、卫生间和面积基于市场均价试算，结果可保存，前端提供导出入口。
 
@@ -102,11 +103,17 @@ npm run dev -- -p 18625
 | GET | `/api/v1/products/:id/offers` | 某建材商家报价 |
 | GET | `/api/v1/products/:id/trend?range=30d` | 价格趋势，支持 `30d`、`90d`、`1y` |
 | GET/POST | `/api/v1/favorites` | 收藏列表 / 添加收藏 |
-| POST | `/api/v1/alerts` | 创建价格预警 |
+| GET/POST | `/api/v1/alerts` | 价格提醒列表（当前最低价、触发价、状态）/ 创建价格预警 |
+| GET | `/api/v1/notifications` | 降价触发后的站内提醒消息 |
+| POST | `/api/v1/supplier/offer-changes` | 供应商提交报价修改（supplier/admin；已有待审时返回 409） |
+| GET | `/api/v1/supplier/offer-changes` | 供应商查看自己的修改单与审核结果 |
+| GET | `/api/v1/admin/offer-changes` | 管理员待审修改队列（admin） |
+| POST | `/api/v1/admin/offer-changes/:id/review` | 审核改价（approve/reject；版本冲突返回 409 并标记失效） |
+| POST | `/api/v1/auth/demo-token` | 演示环境换取 admin/supplier/user 角色令牌 |
 | POST | `/api/v1/budgets` | 保存预算试算 |
 | GET | `/api/v1/suppliers` | 查询供应商 |
 | PATCH | `/api/v1/admin/suppliers/:id/status` | 审核供应商（admin 角色） |
-| PATCH | `/api/v1/supplier/offers/:id/status` | 更新报价库存状态（supplier/admin 角色） |
+| PATCH | `/api/v1/supplier/offers/:id/status` | 更新报价库存状态（supplier/admin 角色），同时推进版本号 |
 
 ## 目录结构
 

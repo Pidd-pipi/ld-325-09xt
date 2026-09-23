@@ -20,9 +20,6 @@ func (s *UserDataService) Favorite(user string, input dto.CreateFavoriteRequest)
 func (s *UserDataService) Favorites(user string) ([]model.Favorite, error) {
 	return s.repo.ListFavorites(user)
 }
-func (s *UserDataService) Alert(user string, input dto.CreateAlertRequest) (model.PriceAlert, error) {
-	return s.repo.CreateAlert(model.PriceAlert{UserID: user, ProductID: input.ProductID, TargetPrice: input.TargetPrice, DropPercent: input.DropPercent, Active: true})
-}
 func (s *UserDataService) Budget(user string, input dto.BudgetRequest) (model.Budget, error) {
 	rate := 350.0
 	if input.RoomType == constants.BudgetRoomKitchen {

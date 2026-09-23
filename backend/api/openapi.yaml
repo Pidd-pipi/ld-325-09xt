@@ -1,23 +1,86 @@
 openapi: 3.0.3
 info:
   title: 筑价建材比价 API
-  version: 1.0.0
+  version: 1.1.0
 paths:
   /healthz:
     get:
       responses: {'200': {description: 服务健康}}
+  /api/v1/auth/demo-token:
+    post:
+      summary: 演示环境换取角色令牌（admin/supplier/user）
+      responses: {'200': {description: 成功}}
   /api/v1/products:
     get:
       summary: 搜索、分类和排序建材
+      responses: {'200': {description: 成功}}
+  /api/v1/products/{id}:
+    get:
+      summary: 建材详情及报价
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
       responses: {'200': {description: 成功}}
   /api/v1/products/compare:
     post:
       summary: 批量比较建材
       responses: {'200': {description: 成功}}
+  /api/v1/products/{id}/offers:
+    get:
+      summary: 某建材的商家报价列表
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
+      responses: {'200': {description: 成功}}
+  /api/v1/products/{id}/trend:
+    get:
+      summary: 价格趋势（30d/90d/1y）
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
+        - {name: range, in: query, schema: {type: string, enum: [30d, 90d, 1y]}}
+      responses: {'200': {description: 成功}}
+  /api/v1/suppliers:
+    get: {summary: 查询供应商}
+  /api/v1/admin/suppliers/{id}/status:
+    patch:
+      summary: 审核供应商（admin）
+      responses: {'200': {description: 成功}}
+  /api/v1/admin/offer-changes:
+    get:
+      summary: 待审报价修改队列（admin）
+      responses: {'200': {description: 成功}}
+  /api/v1/admin/offer-changes/{id}/review:
+    post:
+      summary: 审核报价修改（approve/reject）；报价版本已变化时返回 409 并标记 stale
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: integer}}
+      responses:
+        '200': {description: 审核通过或驳回成功}
+        '409': {description: 报价版本已变化，修改单标记为失效}
+  /api/v1/supplier/offers/{id}/status:
+    patch:
+      summary: 更新报价库存状态（supplier/admin），同时推进版本号
+      responses: {'200': {description: 成功}}
+  /api/v1/supplier/offer-changes:
+    get:
+      summary: 供应商查看自己的报价修改与审核结果
+      responses: {'200': {description: 成功}}
+    post:
+      summary: 供应商提交新的单价、运费、货期和库存状态；已有待审修改时返回 409
+      responses:
+        '200': {description: 提交成功}
+        '409': {description: 该报价已有待审修改，本次提交不入库}
   /api/v1/favorites:
     get: {summary: 获取收藏}
     post: {summary: 添加收藏}
   /api/v1/alerts:
-    post: {summary: 创建价格预警}
+    get:
+      summary: 价格提醒列表，含当前最低价、触发价与状态
+      responses: {'200': {description: 成功}}
+    post:
+      summary: 创建价格预警（目标价与降幅至少一项；同一建材仅一条生效订阅）
+      responses: {'200': {description: 成功}}
+  /api/v1/notifications:
+    get:
+      summary: 降价触发后的站内提醒消息
+      responses: {'200': {description: 成功}}
   /api/v1/budgets:
     post: {summary: 保存装修预算}

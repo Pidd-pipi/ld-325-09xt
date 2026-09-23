@@ -30,7 +30,11 @@ const (
 	UserIDContextKey    = "user_id"
 	RoleContextKey      = "role"
 	DemoUserID          = "demo-user"
+	DemoAdminID         = "demo-admin"
+	DemoSupplierPrefix  = "supplier-"
 	HistorySeedDays     = 365
+	TimeDisplayLayout   = "2006-01-02 15:04"
+	DateOnlyLayout      = "2006-01-02"
 )
 
 var DemoTokenLifetime = time.Hour * 24
